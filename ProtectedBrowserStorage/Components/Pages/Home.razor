@@ -1,0 +1,58 @@
+﻿@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+@page "/"
+
+<PageTitle>Protected Browser Storage in Blazor Server</PageTitle>
+
+@if (IsConnected)
+{
+    <p>Generate your lucky number!</p>
+    <button type="button" @onclick="Generate">Generate</button>
+
+    <p>Your lucky number is: @LuckyNumber</p>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    public int LuckyNumber { get; set; }
+    public bool IsConnected { get; set; }
+    private Random _random = new Random();
+
+    protected override Task OnInitializedAsync()
+    {
+        int a = 2;
+        return Task.CompletedTask;
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        int a = 2;
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            IsConnected = true;
+
+            var result = await ProtectedSessionStore.GetAsync<int>("luckyNumber");
+            if (result.Success)
+            {
+                LuckyNumber = result.Value;
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    public async Task Generate()
+    {
+        LuckyNumber = _random.Next(1, 99);
+        await ProtectedSessionStore.SetAsync("luckyNumber", LuckyNumber);
+    }
+}
